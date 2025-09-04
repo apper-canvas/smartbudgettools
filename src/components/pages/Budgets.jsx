@@ -17,17 +17,21 @@ import { formatCurrency } from "@/utils/currency"
 import { getCurrentMonth } from "@/utils/date"
 
 const Budgets = () => {
-  const [budgets, setBudgets] = useState([])
+const [budgets, setBudgets] = useState([])
   const [categories, setCategories] = useState([])
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [showBudgetForm, setShowBudgetForm] = useState(false)
+  const [showAlertSettings, setShowAlertSettings] = useState(null)
   const [formData, setFormData] = useState({
     category: "",
     monthlyLimit: ""
   })
-
+  const [alertSettings, setAlertSettings] = useState({
+    threshold: 80,
+    methods: ["email", "push"]
+  })
   useEffect(() => {
     loadData()
   }, [])
@@ -67,7 +71,7 @@ const Budgets = () => {
     return categoryTransactions.reduce((sum, t) => sum + t.amount, 0)
   }
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!formData.category || !formData.monthlyLimit) {
@@ -94,7 +98,9 @@ const Budgets = () => {
         category: formData.category,
         monthlyLimit: monthlyLimit,
         spent: calculateSpentAmount(formData.category),
-        month: currentMonth.key
+        month: currentMonth.key,
+        alertThreshold: alertSettings.threshold,
+        alertMethods: alertSettings.methods
       }
 
       const newBudget = await budgetService.create(budgetData)
@@ -106,6 +112,35 @@ const Budgets = () => {
     } catch (err) {
       console.error("Failed to create budget:", err)
       toast.error("Failed to create budget. Please try again.")
+    }
+  }
+
+  const handleUpdateAlerts = async (budgetId, newAlertSettings) => {
+    try {
+      const updatedBudget = await budgetService.update(budgetId, {
+        alertThreshold: newAlertSettings.threshold,
+        alertMethods: newAlertSettings.methods
+      })
+      setBudgets(prev => prev.map(b => b.Id === budgetId ? updatedBudget : b))
+      toast.success("Alert settings updated successfully!")
+    } catch (err) {
+      console.error("Failed to update alert settings:", err)
+      toast.error("Failed to update alert settings. Please try again.")
+    }
+  }
+
+  const toggleAlertSettings = (budgetId) => {
+    if (showAlertSettings === budgetId) {
+      setShowAlertSettings(null)
+    } else {
+      const budget = budgets.find(b => b.Id === budgetId)
+      if (budget) {
+        setAlertSettings({
+          threshold: budget.alertThreshold || 80,
+          methods: budget.alertMethods || ["email", "push"]
+        })
+      }
+      setShowAlertSettings(budgetId)
     }
   }
 
@@ -254,7 +289,7 @@ const Budgets = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="relative">
+<Card className="relative">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <CategoryIcon category={budget.category} size="lg" />
@@ -263,12 +298,21 @@ const Budgets = () => {
                         <p className="text-sm text-gray-500">Monthly Budget</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleDeleteBudget(budget.Id)}
-                      className="p-2 text-gray-400 hover:text-error hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <ApperIcon name="Trash2" className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => toggleAlertSettings(budget.Id)}
+                        className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                        title="Alert Settings"
+                      >
+                        <ApperIcon name="Settings" className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteBudget(budget.Id)}
+                        className="p-2 text-gray-400 hover:text-error hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <ApperIcon name="Trash2" className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-center mb-6">
@@ -312,6 +356,95 @@ const Budgets = () => {
                         You've exceeded your budget by {formatCurrency(Math.abs(remaining))}
                       </p>
                     </div>
+)}
+
+                  {/* Alert Settings Panel */}
+                  {showAlertSettings === budget.Id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-4 pt-4 border-t border-gray-100"
+                    >
+                      <h4 className="text-sm font-semibold text-gray-900 mb-3">Alert Configuration</h4>
+                      
+                      <div className="space-y-4">
+                        {/* Alert Threshold */}
+                        <div>
+                          <label className="text-xs font-medium text-gray-600 mb-2 block">
+                            Alert Threshold: {alertSettings.threshold}%
+                          </label>
+                          <input
+                            type="range"
+                            min="50"
+                            max="95"
+                            step="5"
+                            value={alertSettings.threshold}
+                            onChange={(e) => setAlertSettings(prev => ({ ...prev, threshold: parseInt(e.target.value) }))}
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                          />
+                          <div className="flex justify-between text-xs text-gray-400 mt-1">
+                            <span>50%</span>
+                            <span>95%</span>
+                          </div>
+                        </div>
+
+                        {/* Notification Methods */}
+                        <div>
+                          <label className="text-xs font-medium text-gray-600 mb-2 block">
+                            Notification Methods
+                          </label>
+                          <div className="space-y-2">
+                            {[
+                              { value: "email", label: "Email Notifications", icon: "Mail" },
+                              { value: "push", label: "Push Notifications", icon: "Bell" },
+                              { value: "sms", label: "SMS Messages", icon: "MessageSquare" }
+                            ].map((method) => (
+                              <label key={method.value} className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={alertSettings.methods.includes(method.value)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setAlertSettings(prev => ({ 
+                                        ...prev, 
+                                        methods: [...prev.methods, method.value] 
+                                      }))
+                                    } else {
+                                      setAlertSettings(prev => ({ 
+                                        ...prev, 
+                                        methods: prev.methods.filter(m => m !== method.value) 
+                                      }))
+                                    }
+                                  }}
+                                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                />
+                                <ApperIcon name={method.icon} className="h-4 w-4 text-gray-500" />
+                                <span className="text-sm text-gray-700">{method.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleUpdateAlerts(budget.Id, alertSettings)}
+                          >
+                            Save Settings
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setShowAlertSettings(null)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
                   )}
                 </Card>
               </motion.div>

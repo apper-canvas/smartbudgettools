@@ -23,18 +23,20 @@ class BudgetService {
     return { ...budget }
   }
 
-  async create(budgetData) {
+async create(budgetData) {
     await this.delay()
     const maxId = Math.max(...this.budgets.map(b => b.Id), 0)
     const newBudget = {
       Id: maxId + 1,
+      alertThreshold: 80,
+      alertMethods: ["email", "push"],
       ...budgetData
     }
     this.budgets.push(newBudget)
     return { ...newBudget }
   }
 
-  async update(id, budgetData) {
+async update(id, budgetData) {
     await this.delay()
     const index = this.budgets.findIndex(b => b.Id === parseInt(id))
     if (index === -1) {
