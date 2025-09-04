@@ -1,0 +1,30 @@
+[
+  {
+    "Id": 1,
+    "name": "Emergency Fund",
+    "targetAmount": 10000.00,
+    "currentAmount": 3500.00,
+    "deadline": "2024-12-31T00:00:00.000Z"
+  },
+  {
+    "Id": 2,
+    "name": "Vacation to Europe",
+    "targetAmount": 4500.00,
+    "currentAmount": 1200.00,
+    "deadline": "2024-07-01T00:00:00.000Z"
+  },
+  {
+    "Id": 3,
+    "name": "New Laptop",
+    "targetAmount": 2000.00,
+    "currentAmount": 800.00,
+    "deadline": "2024-06-15T00:00:00.000Z"
+  },
+  {
+    "Id": 4,
+    "name": "Car Down Payment",
+    "targetAmount": 5000.00,
+    "currentAmount": 2100.00,
+    "deadline": "2024-09-30T00:00:00.000Z"
+  }
+]
