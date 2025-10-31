@@ -51,8 +51,15 @@ const Goals = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.name || !formData.targetAmount || !formData.deadline) {
+if (!formData.name || !formData.targetAmount || !formData.deadline) {
       toast.error("Please fill in all required fields")
+      return
+    }
+
+    // Validate deadline is a valid date
+    const deadlineDate = new Date(formData.deadline)
+    if (isNaN(deadlineDate.getTime())) {
+      toast.error("Please enter a valid deadline date")
       return
     }
 
@@ -75,11 +82,17 @@ const Goals = () => {
     }
 
     try {
-      const goalData = {
+const goalData = {
         name: formData.name,
         targetAmount: targetAmount,
         currentAmount: currentAmount,
-        deadline: new Date(formData.deadline).toISOString()
+        deadline: formData.deadline ? new Date(formData.deadline).toISOString() : new Date().toISOString()
+      }
+
+      // Final validation before save
+      if (isNaN(new Date(goalData.deadline).getTime())) {
+        toast.error("Invalid deadline date")
+        return
       }
 
       if (editingGoal) {
@@ -132,12 +145,12 @@ const Goals = () => {
   }
 
   const handleEditGoal = (goal) => {
-    setEditingGoal(goal)
+setEditingGoal(goal)
     setFormData({
       name: goal.name,
       targetAmount: goal.targetAmount.toString(),
       currentAmount: goal.currentAmount.toString(),
-      deadline: formatDateInput(goal.deadline)
+      deadline: goal.deadline ? formatDateInput(goal.deadline) : ''
     })
     setShowGoalForm(true)
   }
@@ -369,7 +382,7 @@ const Goals = () => {
             const progress = (goal.currentAmount / goal.targetAmount) * 100
             const remaining = goal.targetAmount - goal.currentAmount
             const isCompleted = goal.currentAmount >= goal.targetAmount
-            const isOverdue = new Date(goal.deadline) < new Date() && !isCompleted
+const isOverdue = goal.deadline && new Date(goal.deadline) < new Date() && !isCompleted
 
             return (
               <motion.div
@@ -388,8 +401,8 @@ const Goals = () => {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">{goal.name}</h3>
-                        <p className="text-sm text-gray-500">
-                          Target: {formatDate(goal.deadline)}
+<p className="text-sm text-gray-500">
+                          Target: {goal.deadline ? formatDate(goal.deadline) : 'No deadline'}
                         </p>
                       </div>
                     </div>
