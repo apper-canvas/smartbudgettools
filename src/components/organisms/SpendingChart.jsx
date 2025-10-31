@@ -139,18 +139,28 @@ const SpendingChart = ({ type = "pie", title }) => {
       })
     }
 
-    const incomeData = months.map(month => {
+const incomeData = months.map(month => {
       const monthTransactions = transactions.filter(t => {
-        const transactionMonth = new Date(t.date).toISOString().slice(0, 7)
-        return t.type === "income" && transactionMonth === month.key
+        try {
+          if (!t.date) return false
+          const transactionMonth = new Date(t.date).toISOString().slice(0, 7)
+          return t.type === "income" && transactionMonth === month.key
+        } catch (error) {
+          return false
+        }
       })
       return monthTransactions.reduce((sum, t) => sum + t.amount, 0)
     })
 
     const expenseData = months.map(month => {
-      const monthTransactions = transactions.filter(t => {
-        const transactionMonth = new Date(t.date).toISOString().slice(0, 7)
-        return t.type === "expense" && transactionMonth === month.key
+const monthTransactions = transactions.filter(t => {
+        try {
+          if (!t.date) return false
+          const transactionMonth = new Date(t.date).toISOString().slice(0, 7)
+          return t.type === "expense" && transactionMonth === month.key
+        } catch (error) {
+          return false
+        }
       })
       return monthTransactions.reduce((sum, t) => sum + t.amount, 0)
     })
