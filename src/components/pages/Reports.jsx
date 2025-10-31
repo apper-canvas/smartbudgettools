@@ -26,13 +26,21 @@ const Reports = () => {
     loadReportData()
   }, [selectedPeriod])
 
-  const loadReportData = async () => {
+const loadReportData = async () => {
     try {
       setError("")
       const data = await transactionService.getAll()
-      setTransactions(data)
-      generateCategoryAnalysis(data)
-      generateMonthlyTrends(data)
+      const mappedData = data.map(t => ({
+        ...t,
+        type: t.type_c,
+        amount: t.amount_c,
+        category: t.category_c,
+        date: t.date_c,
+        description: t.description_c
+      }))
+      setTransactions(mappedData)
+      generateCategoryAnalysis(mappedData)
+      generateMonthlyTrends(mappedData)
     } catch (err) {
       console.error("Failed to load report data:", err)
       setError("Failed to load report data. Please try again.")

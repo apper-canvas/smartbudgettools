@@ -31,7 +31,7 @@ const Goals = () => {
     deadline: ""
   })
 
-  useEffect(() => {
+useEffect(() => {
     loadGoals()
   }, [])
 
@@ -39,7 +39,14 @@ const Goals = () => {
     try {
       setError("")
       const data = await savingsGoalService.getAll()
-      setGoals(data)
+      const mappedData = data.map(goal => ({
+        ...goal,
+        name: goal.name_c,
+        targetAmount: goal.target_amount_c,
+        currentAmount: goal.current_amount_c,
+        deadline: goal.deadline_c
+      }))
+      setGoals(mappedData)
     } catch (err) {
       console.error("Failed to load goals:", err)
       setError("Failed to load savings goals. Please try again.")
@@ -83,25 +90,39 @@ if (!formData.name || !formData.targetAmount || !formData.deadline) {
 
     try {
 const goalData = {
-        name: formData.name,
-        targetAmount: targetAmount,
-        currentAmount: currentAmount,
-        deadline: formData.deadline ? new Date(formData.deadline).toISOString() : new Date().toISOString()
+        name_c: formData.name,
+        target_amount_c: targetAmount,
+        current_amount_c: currentAmount,
+        deadline_c: formData.deadline ? new Date(formData.deadline).toISOString() : new Date().toISOString()
       }
 
       // Final validation before save
-      if (isNaN(new Date(goalData.deadline).getTime())) {
+      if (isNaN(new Date(goalData.deadline_c).getTime())) {
         toast.error("Invalid deadline date")
         return
       }
 
       if (editingGoal) {
         const updatedGoal = await savingsGoalService.update(editingGoal.Id, goalData)
-        setGoals(prev => prev.map(g => g.Id === editingGoal.Id ? updatedGoal : g))
+        const mappedGoal = {
+          ...updatedGoal,
+          name: updatedGoal.name_c,
+          targetAmount: updatedGoal.target_amount_c,
+          currentAmount: updatedGoal.current_amount_c,
+          deadline: updatedGoal.deadline_c
+        }
+        setGoals(prev => prev.map(g => g.Id === editingGoal.Id ? mappedGoal : g))
         toast.success("Savings goal updated successfully!")
       } else {
         const newGoal = await savingsGoalService.create(goalData)
-        setGoals(prev => [...prev, newGoal])
+        const mappedGoal = {
+          ...newGoal,
+          name: newGoal.name_c,
+          targetAmount: newGoal.target_amount_c,
+          currentAmount: newGoal.current_amount_c,
+          deadline: newGoal.deadline_c
+        }
+        setGoals(prev => [...prev, mappedGoal])
         toast.success("Savings goal created successfully!")
       }
 
@@ -112,7 +133,7 @@ const goalData = {
     }
   }
 
-  const handleContribute = async (e) => {
+const handleContribute = async (e) => {
     e.preventDefault()
 
     const amount = parseFloat(contributionAmount)
@@ -129,11 +150,21 @@ const goalData = {
 
     try {
       const updatedGoal = await savingsGoalService.update(selectedGoal.Id, {
-        ...selectedGoal,
-        currentAmount: newCurrentAmount
+        name_c: selectedGoal.name,
+        target_amount_c: selectedGoal.targetAmount,
+        current_amount_c: newCurrentAmount,
+        deadline_c: selectedGoal.deadline
       })
       
-      setGoals(prev => prev.map(g => g.Id === selectedGoal.Id ? updatedGoal : g))
+      const mappedGoal = {
+        ...updatedGoal,
+        name: updatedGoal.name_c,
+        targetAmount: updatedGoal.target_amount_c,
+        currentAmount: updatedGoal.current_amount_c,
+        deadline: updatedGoal.deadline_c
+      }
+      
+      setGoals(prev => prev.map(g => g.Id === selectedGoal.Id ? mappedGoal : g))
       setShowContributeModal(false)
       setSelectedGoal(null)
       setContributionAmount("")

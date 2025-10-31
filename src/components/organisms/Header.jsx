@@ -1,8 +1,10 @@
 import React from "react"
 import Button from "@/components/atoms/Button"
 import ApperIcon from "@/components/ApperIcon"
+import { useAuth } from "@/layouts/Root"
 
 const Header = ({ onMenuClick, title }) => {
+  const { logout } = useAuth()
   return (
     <header className="bg-white border-b border-gray-200 px-4 lg:px-8 py-4">
       <div className="flex items-center justify-between">
@@ -24,7 +26,7 @@ const Header = ({ onMenuClick, title }) => {
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+<div className="flex items-center gap-4">
           {/* Quick Actions */}
           <div className="hidden sm:flex items-center gap-2">
             <Button variant="outline" size="sm">
@@ -44,6 +46,16 @@ const Header = ({ onMenuClick, title }) => {
           {/* Settings */}
           <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
             <ApperIcon name="Settings" className="h-5 w-5" />
+          </button>
+
+          {/* Logout */}
+          <button 
+            onClick={logout}
+            className="p-2 text-gray-400 hover:text-error hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2"
+            title="Logout"
+          >
+            <ApperIcon name="LogOut" className="h-5 w-5" />
+            <span className="hidden sm:inline text-sm font-medium">Logout</span>
           </button>
         </div>
       </div>

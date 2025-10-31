@@ -22,17 +22,17 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
-    loadCategories()
+loadCategories()
   }, [])
 
   useEffect(() => {
     if (transaction) {
       setFormData({
-        type: transaction.type,
-        amount: transaction.amount.toString(),
-        category: transaction.category,
-        date: formatDateInput(transaction.date),
-        description: transaction.description
+        type: transaction.type_c || transaction.type,
+        amount: (transaction.amount_c || transaction.amount).toString(),
+        category: transaction.category_c || transaction.category,
+        date: formatDateInput(transaction.date_c || transaction.date),
+        description: transaction.description_c || transaction.description
       })
     }
   }, [transaction])
@@ -40,7 +40,14 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
   const loadCategories = async () => {
     try {
       const data = await categoryService.getAll()
-      setCategories(data)
+      const mappedData = data.map(c => ({
+        ...c,
+        name: c.name_c || c.Name,
+        type: c.type_c,
+        icon: c.icon_c,
+        color: c.color_c
+      }))
+      setCategories(mappedData)
     } catch (error) {
       console.error("Failed to load categories:", error)
     }
@@ -65,7 +72,7 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!validateForm()) {
@@ -76,9 +83,11 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
     
     try {
       const transactionData = {
-        ...formData,
-        amount: parseFloat(formData.amount),
-        date: new Date(formData.date).toISOString()
+        type_c: formData.type,
+        amount_c: parseFloat(formData.amount),
+        category_c: formData.category,
+        date_c: new Date(formData.date).toISOString(),
+        description_c: formData.description
       }
 
       if (transaction) {

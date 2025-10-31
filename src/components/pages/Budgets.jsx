@@ -35,7 +35,7 @@ const [budgets, setBudgets] = useState([])
     methods: ["email", "push"]
   })
   useEffect(() => {
-    loadData()
+loadData()
   }, [])
 
   const loadData = async () => {
@@ -48,11 +48,40 @@ const [budgets, setBudgets] = useState([])
       ])
 
       const currentMonth = getCurrentMonth()
-      const currentBudgets = budgetsData.filter(b => b.month === currentMonth.key)
+      const mappedBudgets = budgetsData
+        .filter(b => b.month_c === currentMonth.key)
+        .map(b => ({
+          ...b,
+          category: b.category_c,
+          monthlyLimit: b.monthly_limit_c,
+          spent: b.spent_c,
+          month: b.month_c,
+          alertThreshold: b.alert_threshold_c,
+          alertMethods: typeof b.alert_methods_c === 'string' ? b.alert_methods_c.split(',') : b.alert_methods_c
+        }))
       
-      setBudgets(currentBudgets)
-      setCategories(categoriesData.filter(c => c.type === "expense"))
-      setTransactions(transactionsData)
+      const mappedCategories = categoriesData
+        .filter(c => c.type_c === "expense")
+        .map(c => ({
+          ...c,
+          name: c.name_c || c.Name,
+          type: c.type_c,
+          icon: c.icon_c,
+          color: c.color_c
+        }))
+
+      const mappedTransactions = transactionsData.map(t => ({
+        ...t,
+        type: t.type_c,
+        amount: t.amount_c,
+        category: t.category_c,
+        date: t.date_c,
+        description: t.description_c
+      }))
+      
+      setBudgets(mappedBudgets)
+      setCategories(mappedCategories)
+      setTransactions(mappedTransactions)
     } catch (err) {
       console.error("Failed to load budget data:", err)
       setError("Failed to load budget data. Please try again.")
@@ -87,7 +116,6 @@ const handleSubmit = async (e) => {
       return
     }
 
-    // Check if budget already exists for this category
     const existingBudget = budgets.find(b => b.category === formData.category)
     if (existingBudget) {
       toast.error("Budget already exists for this category")
@@ -97,16 +125,25 @@ const handleSubmit = async (e) => {
     try {
       const currentMonth = getCurrentMonth()
       const budgetData = {
-        category: formData.category,
-        monthlyLimit: monthlyLimit,
-        spent: calculateSpentAmount(formData.category),
-        month: currentMonth.key,
-        alertThreshold: alertSettings.threshold,
-        alertMethods: alertSettings.methods
+        category_c: formData.category,
+        monthly_limit_c: monthlyLimit,
+        spent_c: calculateSpentAmount(formData.category),
+        month_c: currentMonth.key,
+        alert_threshold_c: alertSettings.threshold,
+        alert_methods_c: alertSettings.methods
       }
 
       const newBudget = await budgetService.create(budgetData)
-      setBudgets(prev => [...prev, newBudget])
+      const mappedBudget = {
+        ...newBudget,
+        category: newBudget.category_c,
+        monthlyLimit: newBudget.monthly_limit_c,
+        spent: newBudget.spent_c,
+        month: newBudget.month_c,
+        alertThreshold: newBudget.alert_threshold_c,
+        alertMethods: typeof newBudget.alert_methods_c === 'string' ? newBudget.alert_methods_c.split(',') : newBudget.alert_methods_c
+      }
+      setBudgets(prev => [...prev, mappedBudget])
       
       setFormData({ category: "", monthlyLimit: "" })
       setShowBudgetForm(false)
@@ -117,13 +154,27 @@ const handleSubmit = async (e) => {
     }
   }
 
-  const handleUpdateAlerts = async (budgetId, newAlertSettings) => {
+const handleUpdateAlerts = async (budgetId, newAlertSettings) => {
     try {
+      const budget = budgets.find(b => b.Id === budgetId)
       const updatedBudget = await budgetService.update(budgetId, {
-        alertThreshold: newAlertSettings.threshold,
-        alertMethods: newAlertSettings.methods
+        category_c: budget.category,
+        monthly_limit_c: budget.monthlyLimit,
+        spent_c: budget.spent,
+        month_c: budget.month,
+        alert_threshold_c: newAlertSettings.threshold,
+        alert_methods_c: newAlertSettings.methods
       })
-      setBudgets(prev => prev.map(b => b.Id === budgetId ? updatedBudget : b))
+      const mappedBudget = {
+        ...updatedBudget,
+        category: updatedBudget.category_c,
+        monthlyLimit: updatedBudget.monthly_limit_c,
+        spent: updatedBudget.spent_c,
+        month: updatedBudget.month_c,
+        alertThreshold: updatedBudget.alert_threshold_c,
+        alertMethods: typeof updatedBudget.alert_methods_c === 'string' ? updatedBudget.alert_methods_c.split(',') : updatedBudget.alert_methods_c
+      }
+      setBudgets(prev => prev.map(b => b.Id === budgetId ? mappedBudget : b))
       toast.success("Alert settings updated successfully!")
     } catch (err) {
       console.error("Failed to update alert settings:", err)

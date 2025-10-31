@@ -31,7 +31,7 @@ const Dashboard = () => {
     loadDashboardData()
   }, [refreshTrigger])
 
-  const loadDashboardData = async () => {
+const loadDashboardData = async () => {
     try {
       setError("")
       const [transactions, budgets] = await Promise.all([
@@ -41,21 +41,21 @@ const Dashboard = () => {
 
       const currentMonth = getCurrentMonth()
       const currentMonthTransactions = transactions.filter(t => {
-        const transactionDate = new Date(t.date)
+        const transactionDate = new Date(t.date_c)
         return transactionDate >= currentMonth.start && transactionDate <= currentMonth.end
       })
 
       const income = currentMonthTransactions
-        .filter(t => t.type === "income")
-        .reduce((sum, t) => sum + t.amount, 0)
+        .filter(t => t.type_c === "income")
+        .reduce((sum, t) => sum + t.amount_c, 0)
 
       const expenses = currentMonthTransactions
-        .filter(t => t.type === "expense")
-        .reduce((sum, t) => sum + t.amount, 0)
+        .filter(t => t.type_c === "expense")
+        .reduce((sum, t) => sum + t.amount_c, 0)
 
       const totalBudget = budgets
-        .filter(b => b.month === currentMonth.key)
-        .reduce((sum, b) => sum + b.monthlyLimit, 0)
+        .filter(b => b.month_c === currentMonth.key)
+        .reduce((sum, b) => sum + b.monthly_limit_c, 0)
 
       const remaining = totalBudget - expenses
 
