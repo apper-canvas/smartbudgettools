@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { useOutletContext } from "react-router-dom"
 import { motion } from "framer-motion"
 import { toast } from "react-toastify"
 import Button from "@/components/atoms/Button"
@@ -14,6 +15,7 @@ import { formatCurrency } from "@/utils/currency"
 import { formatDate, formatDateInput } from "@/utils/date"
 
 const Goals = () => {
+  const outletContext = useOutletContext()
   const [goals, setGoals] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")

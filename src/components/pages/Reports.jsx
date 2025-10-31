@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { useOutletContext } from "react-router-dom"
 import { motion } from "framer-motion"
 import Card from "@/components/atoms/Card"
 import Button from "@/components/atoms/Button"
@@ -13,6 +14,7 @@ import { formatCurrency } from "@/utils/currency"
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns"
 
 const Reports = () => {
+  const outletContext = useOutletContext()
   const [transactions, setTransactions] = useState([])
   const [categoryAnalysis, setCategoryAnalysis] = useState([])
   const [monthlyTrends, setMonthlyTrends] = useState([])

@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { useOutletContext } from "react-router-dom"
 import { motion } from "framer-motion"
 import Button from "@/components/atoms/Button"
 import TransactionList from "@/components/organisms/TransactionList"
@@ -6,6 +7,7 @@ import TransactionForm from "@/components/organisms/TransactionForm"
 import ApperIcon from "@/components/ApperIcon"
 
 const Transactions = () => {
+  const outletContext = useOutletContext()
   const [showTransactionForm, setShowTransactionForm] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)

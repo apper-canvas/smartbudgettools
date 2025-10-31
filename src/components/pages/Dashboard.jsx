@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { useOutletContext } from "react-router-dom"
 import { motion } from "framer-motion"
 import StatCard from "@/components/molecules/StatCard"
 import TransactionList from "@/components/organisms/TransactionList"
@@ -14,6 +15,7 @@ import { formatCurrency } from "@/utils/currency"
 import { getCurrentMonth } from "@/utils/date"
 
 const Dashboard = () => {
+  const outletContext = useOutletContext()
   const [stats, setStats] = useState({
     totalIncome: 0,
     totalExpenses: 0,

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { useOutletContext } from "react-router-dom"
 import { motion } from "framer-motion"
 import { toast } from "react-toastify"
 import Button from "@/components/atoms/Button"
@@ -17,6 +18,7 @@ import { formatCurrency } from "@/utils/currency"
 import { getCurrentMonth } from "@/utils/date"
 
 const Budgets = () => {
+  const outletContext = useOutletContext()
 const [budgets, setBudgets] = useState([])
   const [categories, setCategories] = useState([])
   const [transactions, setTransactions] = useState([])
